@@ -8,7 +8,7 @@ public class SecondLesson {
 
         int[] arr1 = {1, 1, 0, 0, 1, 0, 1, 1, 0, 0};
         int[] arr2 = new int[8];
-        int[] arr3 = {7, 5, 3, 2, 11, 4, 5, 2, 4, 8, 9, 1};
+        int[] arr3 = {1, 5, 3, 2, 11, 4, 5, 2, 4, 8, 9, 1};
         int[][] arr4 = new int[5][5];
 
         System.out.println("Массив на входе:");

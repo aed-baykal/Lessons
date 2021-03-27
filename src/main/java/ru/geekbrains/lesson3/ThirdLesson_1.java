@@ -3,7 +3,7 @@ package ru.geekbrains.lesson3;
 import java.util.Random;
 import java.util.Scanner;
 
-public class thirdLesson_1 {
+public class ThirdLesson_1 {
     public static void main(String[] args) {
 
         guessTheNumber();

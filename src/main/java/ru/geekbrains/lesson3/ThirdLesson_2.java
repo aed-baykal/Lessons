@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
-public class thirdLesson_2 {
+public class ThirdLesson_2 {
     public static void main(String[] args) {
 
         guessTheWord();

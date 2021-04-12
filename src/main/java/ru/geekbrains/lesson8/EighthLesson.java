@@ -2,86 +2,64 @@ package ru.geekbrains.lesson8;
 
 public class EighthLesson {
 
-    private static final char DOT_PLAYER = 'X';
-    private static final char DOT_COMP = '0';
-    private static final char DOT_EMPTY = '.';
-    private static final char[][] FIELD = new char[5][5];
+    public static final char DOT_PLAYER = 'X';
+    public static final char DOT_COMP = '0';
+    public static final char DOT_EMPTY = ' ';
+    public static final char[][] FIELD = new char[5][5];
     private static int theSameInTheLineMax;
-    private static int fieldSize;
+    public static int fieldSize;
+    public static int gameType;
+    public static boolean decision = true;
+    public static boolean firstPlayer;
 
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         gameTicTac();
 
     }
 
-    static void gameTicTac() {
-
-//        Scanner scanner = new Scanner(System.in);
-        int decision = 1;
-
-//        System.out.println("Вы запустили игру 'Крестики Нолики.'");
-
-        //TODO Окно настроек "Вы запустили игру 'Крестики Нолики.'"
-        SettingsWindow sWindow = new SettingsWindow();
+    public static void gameTicTac() throws InterruptedException {
 
         do {
-            do {
-//                System.out.println("Введите размер поля ('3х3'- 3 или '5х5' - 5)");
 
-                //TODO поле вывода "Введите размер поля ('3х3'- 3 или '5х5' - 5)"
+            SettingsWindow sWindow = new SettingsWindow();
+            while (sWindow.isVisible()) Thread.sleep(1000);
 
-//                fieldSize = SCANNER.nextInt();
-
-                //TODO Сделать ввод игрового поля
-
-            } while (fieldSize != 3 && fieldSize != 5);
             if (fieldSize == 3) theSameInTheLineMax = fieldSize;
             else theSameInTheLineMax = fieldSize - 1;
 
-            //TODO Настройки
-
             initfield();
-            initGame();
-//            System.out.println("Повторить игру еще раз? 1 – да / 0 – нет» ");
-//            decision = scanner.nextInt();
+            GameWindows gameWindows = new GameWindows(fieldSize);
+            initGame(gameWindows, gameType);
 
-            //TODO Запрос повтора или окончания игры
-
-        } while (decision != 0);
+            RepeatGameWindow repeatGameWindow = new RepeatGameWindow();
+            while (repeatGameWindow.isVisible()) Thread.sleep(1000);
+            gameWindows.dispose();
+        } while (decision);
 
     }
 
-    static void initGame() {
+    static void initGame(GameWindows gameWindows, int gameType) throws InterruptedException {
+        firstPlayer = true;
 
-        drawingThePlayingField();                   // Отрисовка поля
         while (true) {
-
-            requestAPlayerHasMove();                // Ход игрока
+            while (!GameWindows.makeTurn) Thread.sleep(100);
+            GameWindows.makeTurn = false;
+            if (gameType == 2) firstPlayer = !firstPlayer;
             if (responseProcessing(DOT_PLAYER)) {   // Проверка на победу игрока
-                drawingThePlayingField();
-//                System.out.println("Игра окончена. Поздравляю, вы выиграли!");
-
-                //TODO Окно вывода "Игра окончена. Поздравляю, вы выиграли!"
-
+                if (gameType == 1) new Notification("Игра окончена. Поздравляю, вы победили!");
+                else new Notification("Игра окончена. Поздравляю, первый игрок победил!");
                 break;
             }
-            workingOutANewMove();                   // Ход компа. НОУ ХАУ :)
-            drawingThePlayingField();
+            if (gameType == 1) workingOutANewMove();                   // Ход компа. НОУ ХАУ :)
             if (responseProcessing(DOT_COMP)) {     // Проверка напобеду компа
-                drawingThePlayingField();
-//                System.out.println("Игра окончена. Компьютер выиграл.");
-
-                //TODO Окно вывода "Игра окончена. Компьютер выиграл."
-
+                if (gameType == 1) new Notification("Игра окончена. Компьютер выиграл.");
+                else new Notification("Игра окончена. Поздравляю, второй игрок победил!");
                 break;
             }
+
             if (isThereADraw()) {                   // Проверка на ничью
-//                System.out.println("Игра окончена. Ничья.");
-
-                //TODO Окно вывода "Игра окончена. Ничья."
-
+                new Notification("Игра окончена. Ничья.");
                 break;
             }
 
@@ -99,49 +77,6 @@ public class EighthLesson {
 
     }
 
-    private static void drawingThePlayingField() {
-
-        //TODO Полностью переделать рисование игрового поля
-
-//        System.out.print("   ");
-//        for (int i = 1; i <= fieldSize; i++) {
-//            System.out.print(i + " ");
-//        }
-//        System.out.println();
-//        for (int i = 0; i < fieldSize; i++) {
-//            System.out.println("  ---------");
-//            System.out.print(i + 1 + " |");
-//            for (int j = 0; j < fieldSize; j++) {
-//                System.out.print(FIELD[i][j] + "|");
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("  ---------");
-
-    }
-
-    private static void requestAPlayerHasMove() {
-
-        int humanMoveX;
-        int humanMoveY;
-
-        do {
-//            System.out.print("Введите адрес вашей ячейки для Х (координаты x, y) >>>>");
-
-            //TODO Окно вывода "Введите адрес вашей ячейки для Х (координаты x, y) >>>>"
-
-            humanMoveX = 1;
-            humanMoveY = 1;
-
-            //TODO Переделать ввод хода игрока
-
-        } while (humanMoveY < 0 || humanMoveY >= fieldSize || humanMoveX < 0
-                || humanMoveX >= fieldSize || FIELD[humanMoveY][humanMoveX] == DOT_COMP
-                || FIELD[humanMoveY][humanMoveX] == DOT_PLAYER);
-        FIELD[humanMoveY][humanMoveX] = DOT_PLAYER;
-
-    }
-
     private static boolean responseProcessing(char winner) {
 
         for (int y = 0; y < fieldSize; y++) {          //Пройти всю
@@ -151,8 +86,8 @@ public class EighthLesson {
                                                        // то проверяем соседние на заполненность до theSameInTheLineMax(выигрышного кол-ва в линии)
                     if (horizontal(winner, y, x, theSameInTheLineMax)) return true;
                     if (vertical(winner, y, x, theSameInTheLineMax)) return true;
-                    if (diagonal1(winner, y, theSameInTheLineMax)) return true;
-                    if (diagonal2(winner, y, theSameInTheLineMax)) return true;
+                    if (diagonal1(winner, y, x, theSameInTheLineMax)) return true;
+                    if (diagonal2(winner, y, x, theSameInTheLineMax)) return true;
 
                 }
             }
@@ -174,30 +109,26 @@ public class EighthLesson {
 
     }
 
-    private static boolean diagonal2(char winner, int y, int theSameInTheLineMax) {     // Проверка одних диагоналей на заданное повторение одинаковых символов
+    private static boolean diagonal2(char winner, int y, int x, int theSameInTheLineMax) {     // Проверка одних диагоналей на заданное повторение одинаковых символов
 
-        for (int diagonal2X = 0; diagonal2X < fieldSize; diagonal2X++) {
-            int theSameInTheLine = 0;
-            for (int diagonal2 = y; diagonal2 >= 0; diagonal2--) {
-                if ((fieldSize - 1 - diagonal2 + diagonal2X) < fieldSize) {
-                    if (FIELD[diagonal2][fieldSize - 1 - diagonal2 + diagonal2X] == winner) theSameInTheLine++;
-                    if (theSameInTheLine == theSameInTheLineMax) return true;
-                }
+        int theSameInTheLine = 0;
+        for (int diagonal2 = y; diagonal2 >= 0; diagonal2--) {
+            if ((fieldSize - 1 - diagonal2 + x) < fieldSize) {
+                if (FIELD[diagonal2][fieldSize - 1 - diagonal2 + x] == winner) theSameInTheLine++;
+                if (theSameInTheLine == theSameInTheLineMax) return true;
             }
         }
         return false;
 
     }
 
-    private static boolean diagonal1(char winner, int y, int theSameInTheLineMax) {     // Проверка других диагоналей на заданное повторение одинаковых символов
+    private static boolean diagonal1(char winner, int y, int x, int theSameInTheLineMax) {     // Проверка других диагоналей на заданное повторение одинаковых символов
 
-        for (int diagonal1X = 0; diagonal1X < fieldSize; diagonal1X++) {
-            int theSameInTheLine = 0;
-            for (int diagonal1 = y; diagonal1 < fieldSize; diagonal1++) {
-                if ((diagonal1 + diagonal1X) < fieldSize) {
-                    if (FIELD[diagonal1][diagonal1 + diagonal1X] == winner) theSameInTheLine++;
-                    if (theSameInTheLine == theSameInTheLineMax) return true;
-                }
+        int theSameInTheLine = 0;
+        for (int diagonal1 = y; diagonal1 < fieldSize; diagonal1++) {
+            if ((diagonal1 + x) < fieldSize) {
+                if (FIELD[diagonal1][diagonal1 + x] == winner) theSameInTheLine++;
+                if (theSameInTheLine == theSameInTheLineMax) return true;
             }
         }
         return false;
@@ -240,10 +171,12 @@ public class EighthLesson {
                         if (vertical(DOT_PLAYER, y, x, theSameInTheLineMaxDangerous)) {
                             if ((y - 1) >= 0 && FIELD[y - 1][x] != DOT_COMP && FIELD[y - 1][x] != DOT_PLAYER) {
                                 FIELD[y - 1][x] = DOT_COMP;
+                                GameWindows.buttons[y - 1][x].setText(String.valueOf(FIELD[y - 1][x]));
                                 wasThereADangerous = true;
                                 break;
                             } else if ((y + theSameInTheLineMaxDangerous) < fieldSize && FIELD[y + theSameInTheLineMaxDangerous][x] != DOT_COMP && FIELD[y + theSameInTheLineMaxDangerous][x] != DOT_PLAYER) {
                                 FIELD[y + theSameInTheLineMaxDangerous][x] = DOT_COMP;
+                                GameWindows.buttons[y + theSameInTheLineMaxDangerous][x].setText(String.valueOf(FIELD[y + theSameInTheLineMaxDangerous][x]));
                                 wasThereADangerous = true;
                                 break;
                             }
@@ -251,34 +184,40 @@ public class EighthLesson {
                         if (horizontal(DOT_PLAYER, y, x, theSameInTheLineMaxDangerous)) {
                             if ((x - 1) >= 0 && FIELD[y][x - 1] != DOT_COMP && FIELD[y][x - 1] != DOT_PLAYER) {
                                 FIELD[y][x - 1] = DOT_COMP;
+                                GameWindows.buttons[y][x - 1].setText(String.valueOf(FIELD[y][x - 1]));
                                 wasThereADangerous = true;
                                 break;
                             } else if ((x + theSameInTheLineMaxDangerous) < fieldSize && FIELD[y][x + theSameInTheLineMaxDangerous] != DOT_COMP && FIELD[y][x + theSameInTheLineMaxDangerous] != DOT_PLAYER) {
                                 FIELD[y][x + theSameInTheLineMaxDangerous] = DOT_COMP;
+                                GameWindows.buttons[y][x + theSameInTheLineMaxDangerous].setText(String.valueOf(FIELD[y][x + theSameInTheLineMaxDangerous]));
                                 wasThereADangerous = true;
                                 break;
                             }
                         }
-                        if (diagonal1(DOT_PLAYER, y, theSameInTheLineMaxDangerous)) {
+                        if (diagonal1(DOT_PLAYER, y, x, theSameInTheLineMaxDangerous)) {
                             if ((x - 1) >= 0 && (y - 1) >= 0 && FIELD[y - 1][x - 1] != DOT_COMP && FIELD[y - 1][x - 1] != DOT_PLAYER) {
                                 FIELD[y - 1][x - 1] = DOT_COMP;
+                                GameWindows.buttons[y - 1][x - 1].setText(String.valueOf(FIELD[y - 1][x - 1]));
                                 wasThereADangerous = true;
                                 break;
                             } else if ((x + theSameInTheLineMaxDangerous) < fieldSize && (y + theSameInTheLineMaxDangerous) < fieldSize && FIELD[y + theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous] != DOT_COMP
                                     && FIELD[y + theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous] != DOT_PLAYER) {
                                 FIELD[y + theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous] = DOT_COMP;
+                                GameWindows.buttons[y + theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous].setText(String.valueOf(FIELD[y + theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous]));
                                 wasThereADangerous = true;
                                 break;
                             }
                         }
-                        if (diagonal2(DOT_PLAYER, y, theSameInTheLineMaxDangerous)) {
+                        if (diagonal2(DOT_PLAYER, y, x, theSameInTheLineMaxDangerous)) {
                             if ((x + theSameInTheLineMaxDangerous) < fieldSize && (y - theSameInTheLineMaxDangerous) >= 0 && FIELD[y - theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous] != DOT_COMP
                                     && FIELD[y - theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous] != DOT_PLAYER) {
                                 FIELD[y - theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous] = DOT_COMP;
+                                GameWindows.buttons[y - theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous].setText(String.valueOf(FIELD[y - theSameInTheLineMaxDangerous][x + theSameInTheLineMaxDangerous]));
                                 wasThereADangerous = true;
                                 break;
                             } else if ((x - 1) >= 0 && (y + 1) < fieldSize && FIELD[y + 1][x - 1] != DOT_COMP && FIELD[y + 1][x - 1] != DOT_PLAYER) {
                                 FIELD[y + 1][x - 1] = DOT_COMP;
+                                GameWindows.buttons[y + 1][x - 1].setText(String.valueOf(FIELD[y + 1][x - 1]));
                                 wasThereADangerous = true;
                                 break;
                             }

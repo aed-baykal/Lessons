@@ -1,6 +1,5 @@
 package ru.geekbrains.JavaTwo.lesson1;
 
-import org.jetbrains.annotations.NotNull;
 public interface Moveable {
     String getName();
     String getType();
@@ -29,7 +28,7 @@ public interface Moveable {
         }
     }
 
-    default boolean passedTheTest(@NotNull Passable p) {
+    default boolean passedTheTest(Passable p) {
         if (p.getDistance() > 0) return run(p.getDistance());
         else return jump(p.getHeight());
     }

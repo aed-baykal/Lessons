@@ -22,7 +22,8 @@ public class FifthLesson {
             arr[i] = (float) (arr[i] * Math.sin(0.2f + i / 5) * Math.cos(0.2f + i / 5) * Math.cos(0.4f + i / 2));
         }
         System.out.println("Скорость выпонения первого метода: " + (System.currentTimeMillis() - a));
-        return arr;
+        float[] arrFirst = arr;
+        return arrFirst;
     }
 
     private static float[] second() {

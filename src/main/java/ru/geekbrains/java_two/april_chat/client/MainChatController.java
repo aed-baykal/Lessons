@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import static ru.geekbrains.java_two.april_chat.common.MessageType.PUBLIC;
-
 public class MainChatController implements Initializable, MessageProcessor {
 
+    private static final String PUBLIC = "PUBLIC";
     public TextArea chatArea;
     public ListView onlineUsers;
     public TextField inputField;
@@ -60,15 +59,23 @@ public class MainChatController implements Initializable, MessageProcessor {
         String text = inputField.getText();
         if (text.isEmpty()) return;
         ChatMessage msg = new ChatMessage();
-        msg.setMessageType(PUBLIC);
+        String adressee = (String) this.onlineUsers.getSelectionModel().getSelectedItem();
+        if (adressee.equals(PUBLIC)) msg.setMessageType(MessageType.PUBLIC);
+        else {
+            msg.setMessageType(MessageType.PRIVATE);
+            msg.setTo(adressee);
+        }
         msg.setFrom(currentName);
         msg.setBody(text);
         messageService.send(msg.marshall());
+        chatArea.appendText(String.format("[ME] %s\n", text));
         inputField.clear();
     }
 
     private void appendTextOfChat(ChatMessage msg) {
-        String text = String.format("[%s] %s\n", msg.getFrom(), msg.getBody());
+        if (msg.getFrom().equals(this.currentName)) return;
+        String modifier = msg.getMessageType().equals(MessageType.PUBLIC) ? "[pub]" : "[priv]";
+        String text = String.format("[%s] %s %s\n", msg.getFrom(), modifier, msg.getBody());
         chatArea.appendText(text);
     }
 
@@ -102,6 +109,7 @@ public class MainChatController implements Initializable, MessageProcessor {
             System.out.println("Received message");
 
             switch (message.getMessageType()) {
+                case PRIVATE:
                 case PUBLIC:
                     appendTextOfChat(message);
                     break;
@@ -117,7 +125,9 @@ public class MainChatController implements Initializable, MessageProcessor {
     }
 
     private void refreshOnlineUsers(ChatMessage message) {
+        message.getOnlineUsers().add(0, PUBLIC);
         this.onlineUsers.setItems(FXCollections.observableArrayList(message.getOnlineUsers()));
+        this.onlineUsers.getSelectionModel().selectFirst();
     }
 
     public void sendAuth(ActionEvent actionEvent) {

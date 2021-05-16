@@ -46,8 +46,11 @@ public class ClientHandler {
                 ChatMessage message = ChatMessage.unmarshall(msg);
                 message.setFrom(this.currentUsername);
                 switch (message.getMessageType()) {
-                    case PUBLIC :
+                    case PUBLIC:
                         chatServer.sendBroadcastMessage(message);
+                        break;
+                    case PRIVATE:
+                        chatServer.sendPrivateMessage(message);
                         break;
                 }
             }

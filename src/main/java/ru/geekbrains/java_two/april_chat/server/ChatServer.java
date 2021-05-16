@@ -57,6 +57,12 @@ public class ChatServer {
         }
     }
 
+    public void sendPrivateMessage(ChatMessage message) {
+        for (ClientHandler user : listOnlineUsers) {
+            if (user.getCurrentName().equals(message.getTo())) user.sendMessage(message);
+        }
+    }
+
     public synchronized boolean isUserOnline(String username) {
         for (ClientHandler user : listOnlineUsers) {
             if (user.getCurrentName().equals(username)) return true;
@@ -77,4 +83,5 @@ public class ChatServer {
     public AuthService getAuthService() {
         return authService;
     }
+
 }

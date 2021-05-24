@@ -33,10 +33,9 @@ public class Main {
 
         System.out.println("Вес коробок 1 и 4 равен 'true' или нет 'false': " + appleBox1.compare(orangeBox2));
 
-        System.out.println("Возможность пересыпать фрукты из четвертой коробки во вторую: " + appleBox2.pourOverTheFruit(orangeBox2));
         System.out.println("Вес коробки2: " + appleBox2.getWeight() + "  В нее положили: " + appleBox2.countFruit + " фруктов");
         System.out.println("Вес коробки3: " + orangeBox2.getWeight()+ "  В нее положили: " + orangeBox2.countFruit + " фруктов");
-        System.out.println("Возможность пересыпать фрукты из второй коробки в первую: " + appleBox1.pourOverTheFruit(appleBox2));
+        appleBox1.pourOverTheFruit(appleBox2);
         System.out.println("Вес коробки1: " + appleBox1.getWeight() + "  В нее положили: " + appleBox1.countFruit + " фруктов");
         System.out.println("Вес коробки2: " + appleBox2.getWeight() + "  В нее положили: " + appleBox2.countFruit + " фруктов");
 

@@ -1,20 +1,48 @@
 package ru.geekbrains.java_two.april_chat.server.auth;
 
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class PrimitiveInMemoryAuthService implements AuthService {
 
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
+    private Statement statement;
+    private Connection connection;
 
     public PrimitiveInMemoryAuthService() {
-        this.users = new ArrayList<>(Arrays.asList(
-                new User("user1", "log1", "pass"),
-                new User("user2", "log2", "pass"),
-                new User("user3", "log3", "pass"))
-        );
 
+        try {
+            this.statement = connect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        dbRead();
+        disconnect();
+    }
+
+    static Statement connect() throws SQLException {
+        return DriverManager.getConnection("jdbc:sqlite:src/main/resources/chat_users.db")
+                .createStatement();
+    }
+
+    private void dbRead() {
+        try (ResultSet rs = statement.executeQuery("select UserID, UserLogin, UserPassword from users;")){
+            while (rs.next()) {
+                this.users.add(new User(("User" + rs.getString(1)), rs.getString(2), rs.getString(3)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void disconnect() {
+        try {
+            if(statement != null) statement.close();
+            if (connection != null) connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -30,7 +58,8 @@ public class PrimitiveInMemoryAuthService implements AuthService {
     @Override
     public String getUsernameByLoginAndPassword(String login, String password) {
         for (User user : users) {
-            if (user.getLogin().equals(login) && user.getPassword().equals(password)) return user.getUsername();
+            if (user.getLogin().equals(login) && user.getPassword().equals(password))
+                return user.getUsername();
         }
         return null;
     }
@@ -42,6 +71,11 @@ public class PrimitiveInMemoryAuthService implements AuthService {
 
     @Override
     public String changePassword(String username, String oldPassword, String newPassword) {
+        return null;
+    }
+
+    @Override
+    public User newUser() {
         return null;
     }
 }

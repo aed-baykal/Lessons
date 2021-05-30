@@ -1,9 +1,9 @@
 package ru.geekbrains.java_two.april_chat.server;
 
+import ru.geekbrains.java_two.april_chat.auth.AuthService;
+import ru.geekbrains.java_two.april_chat.auth.DatabaseAuthService;
 import ru.geekbrains.java_two.april_chat.common.ChatMessage;
 import ru.geekbrains.java_two.april_chat.common.MessageType;
-import ru.geekbrains.java_two.april_chat.server.auth.AuthService;
-import ru.geekbrains.java_two.april_chat.server.auth.PrimitiveInMemoryAuthService;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,7 +18,7 @@ public class ChatServer {
 
     public ChatServer() {
         this.listOnlineUsers = new ArrayList<>();
-        this.authService = new PrimitiveInMemoryAuthService();
+        this.authService = new DatabaseAuthService();
     }
 
     public void start() {
@@ -39,12 +39,13 @@ public class ChatServer {
         }
     }
 
-    private synchronized void sendListOnlineUsers() {
+    public synchronized void sendListOnlineUsers() {
         ChatMessage msg = new ChatMessage();
         msg.setMessageType(MessageType.CLIENT_LIST);
         msg.setOnlineUsers(new ArrayList<>());
         for (ClientHandler user : listOnlineUsers) {
             msg.getOnlineUsers().add(user.getCurrentName());
+            System.out.println(user.getCurrentName());
         }
         for (ClientHandler user : listOnlineUsers) {
             user.sendMessage(msg);

@@ -1,5 +1,6 @@
 package ru.geekbrains.java_two.april_chat.server;
 
+import ru.geekbrains.java_two.april_chat.auth.User;
 import ru.geekbrains.java_two.april_chat.common.ChatMessage;
 import ru.geekbrains.java_two.april_chat.common.MessageType;
 
@@ -18,7 +19,9 @@ public class ClientHandler {
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
     private String currentUsername;
-    private static final long TIME_OUT = 120000;
+    private String currentPassword;
+    private boolean exist;
+    private static final long TIME_OUT = 30000;
 
     public ClientHandler(Socket socket, ChatServer chatServer) {
         try {
@@ -26,6 +29,7 @@ public class ClientHandler {
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
+            this.exist = true;
             System.out.println("Client handler created!!!");
 
         } catch (IOException e) {
@@ -37,7 +41,7 @@ public class ClientHandler {
         new Thread(() -> {
             try {
                 authenticate();
-                readMessages();
+                if (exist) readMessages();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -49,6 +53,7 @@ public class ClientHandler {
             while (!Thread.currentThread().isInterrupted() || socket.isConnected()) {
                 String msg = inputStream.readUTF();
                 ChatMessage message = ChatMessage.unmarshall(msg);
+                ChatMessage responce = new ChatMessage();
                 message.setFrom(this.currentUsername);
                 switch (message.getMessageType()) {
                     case PUBLIC:
@@ -56,6 +61,42 @@ public class ClientHandler {
                         break;
                     case PRIVATE:
                         chatServer.sendPrivateMessage(message);
+                        break;
+                    case CHANGE_USERNAME:
+                        String newUserName = chatServer.getAuthService().changeUsername(this.getCurrentName(), message.getBody());
+                        if (newUserName == null || newUserName.isEmpty()) {
+                            responce.setMessageType(MessageType.ERROR);
+                            responce.setBody("Somethings went wrong");
+                        } else {
+                            responce.setMessageType(MessageType.CHANGE_USERNAME_CONFIRM);
+                            responce.setBody(newUserName);
+                            chatServer.unsubscribe(this);
+                            currentUsername = newUserName;
+                            chatServer.subscribe(this);
+                        }
+                        sendMessage(responce);
+                        break;
+                    case CHANGE_PASSWORD:
+                        String newPassword = chatServer.getAuthService().changePassword(this.getCurrentName(), this.getCurrentPassword(), message.getBody());
+                        if (newPassword == null || newPassword.isEmpty()) {
+                            responce.setMessageType(MessageType.ERROR);
+                            responce.setBody("Somethings went wrong");
+                        } else {
+                            responce.setMessageType(MessageType.CHANGE_PASSWORD_CONFIRM);
+                            responce.setBody(newPassword);
+                        }
+                        sendMessage(responce);
+                        break;
+                    case NEW_USER:
+                        User user = chatServer.getAuthService().newUser(this.getCurrentName(), this.getCurrentPassword());
+                        if (user == null) {
+                            responce.setMessageType(MessageType.ERROR);
+                            responce.setBody("Somethings went wrong");
+                        } else {
+                            responce.setMessageType(MessageType.NEW_USER_CONFIRM);
+                            responce.setBody(user.getLogin());
+                        }
+                        sendMessage(responce);
                         break;
                 }
             }
@@ -78,16 +119,17 @@ public class ClientHandler {
         return this.currentUsername;
     }
 
+    public String getCurrentPassword() {
+        return this.currentPassword;
+    }
+
     private void authenticate() throws SocketException {
         System.out.println("Started client  auth...");
         TimerTask task = new TimerTask(){
             @Override
             public void run() {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    closeHandler();
+                    exist = false;
                 System.out.println("Connection is closed!");
             }
         };
@@ -109,6 +151,7 @@ public class ClientHandler {
                     response.setBody("Double auth!");
                     System.out.println("Double auth!");
                 } else {
+                    currentPassword = msg.getPassword();
                     response.setMessageType(MessageType.AUTH_CONFIRM);
                     response.setBody(username);
                     currentUsername = username;
@@ -128,13 +171,10 @@ public class ClientHandler {
     public void closeHandler() {
         try {
             chatServer.unsubscribe(this);
-            socket.close();
+            this.socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public String getCurrentUsername() {
-        return currentUsername;
-    }
 }

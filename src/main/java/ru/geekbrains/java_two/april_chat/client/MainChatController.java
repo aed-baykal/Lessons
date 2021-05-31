@@ -18,6 +18,7 @@ import ru.geekbrains.java_two.april_chat.common.MessageType;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainChatController implements Initializable, MessageProcessor {
@@ -51,6 +52,7 @@ public class MainChatController implements Initializable, MessageProcessor {
     public PasswordField passNewUserField;
     private ChatMessageService messageService;
     private String currentName;
+    private HistoryMaker historyMaker;
 
 
 
@@ -91,6 +93,7 @@ public class MainChatController implements Initializable, MessageProcessor {
         msg.setBody(text);
         messageService.send(msg.marshall());
         chatArea.appendText(String.format("[ME] %s\n", text));
+        historyMaker.writeHistory(String.format("[ME] %s\n", text));
         inputField.clear();
     }
 
@@ -99,6 +102,7 @@ public class MainChatController implements Initializable, MessageProcessor {
         String modifier = msg.getMessageType().equals(MessageType.PUBLIC) ? "[pub]" : "[priv]";
         String text = String.format("[%s] %s %s\n", msg.getFrom(), modifier, msg.getBody());
         chatArea.appendText(text);
+        historyMaker.writeHistory(text);
     }
 
     @Override
@@ -121,6 +125,11 @@ public class MainChatController implements Initializable, MessageProcessor {
                     App.stage1.setTitle(currentName);
                     loginPane.setVisible(false);
                     chatPane.setVisible(true);
+                    this.historyMaker = new HistoryMaker(message.getBody());
+                    List<String> history = historyMaker.readHistory();
+                    for (String s : history) {
+                        chatArea.appendText(s + System.lineSeparator());
+                    }
                 }
                 case CHANGE_USERNAME_CONFIRM -> {
                     changeLogin.setVisible(false);

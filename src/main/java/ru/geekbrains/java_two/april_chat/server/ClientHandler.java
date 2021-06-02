@@ -142,7 +142,7 @@ public class ClientHandler {
                 ChatMessage msg = ChatMessage.unmarshall(authMessage);
                 String username = chatServer.getAuthService().getUsernameByLoginAndPassword(msg.getLogin(), msg.getPassword());
                 ChatMessage response = new ChatMessage();
-                if (username == null) {
+                if (username == null || username.equals("")) {
                     response.setMessageType(MessageType.ERROR);
                     response.setBody("Wrong username or password!");
                     System.out.println("Wrong credentials");
